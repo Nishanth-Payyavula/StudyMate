@@ -1,66 +1,93 @@
+
 import sqlite3
+import os
+from contextlib import closing
+
+DATABASE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "studymate.db")
 
 # Connect to our database
 def get_connection():
-    return sqlite3.connect("studymate.db")
+    return sqlite3.connect(DATABASE_PATH)
 
 
 # Create tables if they don't exist
 def initialize_database():
 
-    connection = get_connection()
-    cursor = connection.cursor()
+    with closing(get_connection()) as connection:
+        cursor = connection.cursor()
 
-    # Notes table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS notes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            subject TEXT NOT NULL,
-            title TEXT NOT NULL,
-            content TEXT NOT NULL
-        )
-    """)
+        # Notes table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS notes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                subject TEXT NOT NULL,
+                title TEXT NOT NULL,
+                content TEXT NOT NULL
+            )
+        """)
 
-    # Tasks table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS tasks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            subject TEXT NOT NULL,
-            completed INTEGER DEFAULT 0
-        )
-    """)
+        # Tasks table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                subject TEXT NOT NULL,
+                completed INTEGER DEFAULT 0
+            )
+        """)
 
-    connection.commit()
-    connection.close()
+        # Quiz Questions table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS quiz_questions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                subject TEXT NOT NULL,
+                question TEXT NOT NULL,
+                option_a TEXT NOT NULL,
+                option_b TEXT NOT NULL,
+                option_c TEXT NOT NULL,
+                option_d TEXT NOT NULL,
+                correct_answer TEXT NOT NULL,
+                explanation TEXT,
+                difficulty TEXT DEFAULT 'Easy',
+                created_by TEXT DEFAULT 'system'
+            )
+        """)
+
+        # Quiz Attempts table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS quiz_attempts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                subject TEXT NOT NULL,
+                score INTEGER NOT NULL,
+                total_questions INTEGER NOT NULL,
+                attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        connection.commit()
 
 
 # Save a note
 def add_note(subject, title, content):
 
-    connection = get_connection()
+    with closing(get_connection()) as connection:
+        connection.execute(
+            "INSERT INTO notes (subject, title, content) VALUES (?, ?, ?)",
+            (subject, title, content)
+        )
 
-    connection.execute(
-        "INSERT INTO notes (subject, title, content) VALUES (?, ?, ?)",
-        (subject, title, content)
-    )
-
-    connection.commit()
-    connection.close()
+        connection.commit()
 
 
 # Read all notes
 def get_notes():
 
-    connection = get_connection()
+    with closing(get_connection()) as connection:
+        cursor = connection.execute(
+            "SELECT id, subject, title, content FROM notes"
+        )
 
-    cursor = connection.execute(
-        "SELECT id, subject, title, content FROM notes"
-    )
-
-    notes = cursor.fetchall()
-
-    connection.close()
+        notes = cursor.fetchall()
 
     return notes
 
@@ -68,43 +95,36 @@ def get_notes():
 # Delete a note
 def delete_note(note_id):
 
-    connection = get_connection()
+    with closing(get_connection()) as connection:
+        connection.execute(
+            "DELETE FROM notes WHERE id = ?",
+            (note_id,)
+        )
 
-    connection.execute(
-        "DELETE FROM notes WHERE id = ?",
-        (note_id,)
-    )
-
-    connection.commit()
-    connection.close()
+        connection.commit()
 
 
 # Add a task
 def add_task(name, subject):
 
-    connection = get_connection()
+    with closing(get_connection()) as connection:
+        connection.execute(
+            "INSERT INTO tasks (name, subject) VALUES (?, ?)",
+            (name, subject)
+        )
 
-    connection.execute(
-        "INSERT INTO tasks (name, subject) VALUES (?, ?)",
-        (name, subject)
-    )
-
-    connection.commit()
-    connection.close()
+        connection.commit()
 
 
 # Get all tasks
 def get_tasks():
 
-    connection = get_connection()
+    with closing(get_connection()) as connection:
+        cursor = connection.execute(
+            "SELECT id, name, subject, completed FROM tasks"
+        )
 
-    cursor = connection.execute(
-        "SELECT id, name, subject, completed FROM tasks"
-    )
-
-    tasks = cursor.fetchall()
-
-    connection.close()
+        tasks = cursor.fetchall()
 
     return tasks
 
@@ -112,15 +132,13 @@ def get_tasks():
 # Mark a task complete
 def complete_task(task_id):
 
-    connection = get_connection()
+    with closing(get_connection()) as connection:
+        connection.execute(
+            "UPDATE tasks SET completed = 1 WHERE id = ?",
+            (task_id,)
+        )
 
-    connection.execute(
-        "UPDATE tasks SET completed = 1 WHERE id = ?",
-        (task_id,)
-    )
-
-    connection.commit()
-    connection.close()
+        connection.commit()
 
 
 # Initialize our database
