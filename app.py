@@ -142,30 +142,87 @@ st.sidebar.caption("Version 0.3 | SQLite Database")
 # 3. DASHBOARD
 # --------------------------------
 
-if page == "Dashboard":
 
-    st.title("🏠 Dashboard")
-    st.write("Welcome to your personal study space!")
+if page == "Dashboard":
 
     # Get actual data from database
     notes = get_notes()
     tasks = get_tasks()
 
     completed_count = sum(task[3] for task in tasks)
+    total_tasks = len(tasks)
+
+    progress = (
+        completed_count / total_tasks
+        if total_tasks > 0
+        else 0
+    )
+
+    # Welcome section
+    st.markdown("""
+        <div style="
+            padding: 30px;
+            border-radius: 20px;
+            background: linear-gradient(
+                120deg,
+                rgba(255,53,79,0.20),
+                rgba(168,117,255,0.20)
+            );
+            border: 1px solid rgba(168,117,255,0.35);
+            margin-bottom: 25px;
+        ">
+            <h1 style="margin:0; font-size:2.5rem;">
+                Welcome to StudyMate ⚡
+            </h1>
+            <p style="font-size:1.05rem; margin-top:10px;">
+                Your space. Your goals. Your progress.
+            </p>
+            <p style="opacity:0.75;">
+                Stay focused, keep learning and make every study
+                session count.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Statistics
+    st.subheader("📊 Your Overview")
 
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Total Notes", len(notes))
-    col2.metric("Total Tasks", len(tasks))
-    col3.metric("Completed Tasks", completed_count)
+    col1.metric("📚 Total Notes", len(notes))
+    col2.metric("🎯 Total Tasks", total_tasks)
+    col3.metric("✅ Completed Tasks", completed_count)
 
     st.divider()
 
+    # Study progress
+    st.subheader("⚡ Study Progress")
+
+    st.progress(progress)
+
+    st.write(
+        f"**{completed_count} of {total_tasks} tasks completed**"
+    )
+
+    if total_tasks == 0:
+        st.caption("Add your first task to start tracking progress!")
+    elif progress == 1:
+        st.success("Amazing! You've completed all your tasks!")
+    else:
+        st.caption("Keep going. Every completed task counts!")
+
+    st.divider()
+
+    # Quick Start
     st.subheader("🚀 Quick Start")
 
-    st.write("Use the sidebar to navigate through your application.")
+    st.write(
+        "Use the sidebar to explore your notes, "
+        "organize your study planner and test your knowledge with quizzes."
+    )
 
-    st.info("Your notes and tasks are now stored in a database!")
+    st.info("Your notes and tasks are safely stored in your database!")
+
 
 
 # --------------------------------
