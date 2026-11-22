@@ -2,6 +2,7 @@ import random
 import sqlite3
 
 import streamlit as st
+from ui import apply_theme
 
 from database import (
     add_note,
@@ -130,6 +131,8 @@ page = st.sidebar.radio(
     "Navigation",
     ["Dashboard", "My Notes", "Study Planner", "Quiz"]
 )
+
+apply_theme(page)
 
 st.sidebar.divider()
 st.sidebar.caption("Version 0.3 | SQLite Database")
