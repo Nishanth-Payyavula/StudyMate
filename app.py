@@ -223,6 +223,57 @@ if page == "Dashboard":
 
     st.info("Your notes and tasks are safely stored in your database!")
 
+    st.divider()
+
+    # Recent Activity
+    st.subheader("🕘 Recent Activity")
+
+    recent_notes = sorted(
+        notes, key=lambda note: note[0], reverse=True
+    )[:3]
+
+    recent_tasks = sorted(
+        tasks, key=lambda task: task[0], reverse=True
+    )[:3]
+
+    recent_quizzes = get_quiz_attempts(limit=3)
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("**📝 Latest Notes**")
+
+        if recent_notes:
+            for note in recent_notes:
+                st.write(f"📌 {note[2]}")
+                st.caption(note[1])
+        else:
+            st.caption("No notes yet.")
+
+    with col2:
+        st.markdown("**🎯 Latest Tasks**")
+
+        if recent_tasks:
+            for task in recent_tasks:
+                status = "✅" if task[3] else "⏳"
+                st.write(f"{status} {task[1]}")
+                st.caption(task[2])
+        else:
+            st.caption("No tasks yet.")
+
+    with col3:
+        st.markdown("**🏆 Recent Quiz Attempts**")
+
+        if recent_quizzes:
+            for quiz in recent_quizzes:
+                st.write(f"📚 {quiz[1]}")
+                st.caption(
+                    f"Score: {quiz[2]}/{quiz[3]} · {quiz[4]}"
+                )
+        else:
+            st.caption("No quiz attempts yet.")
+
+
 
 
 # --------------------------------
